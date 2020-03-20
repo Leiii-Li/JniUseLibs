@@ -11,7 +11,7 @@ set(distribution_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../../distribution)
 
 add_library(lib_gmath STATIC IMPORTED)
 set_target_properties(lib_gmath PROPERTIES IMPORTED_LOCATION
-        ${distribution_DIR}/gmath/lib/${ANDROID_ABI}/libgmath.a)
+        ${distribution_DIR}/gmath/lib/${CMAKE_ANDROID_ARCH_ABI}/libgmath.a)
 
 # shared lib will also be tucked into APK and sent to target
 # refer to app/build.gradle, jniLibs section for that purpose.
@@ -19,12 +19,14 @@ set_target_properties(lib_gmath PROPERTIES IMPORTED_LOCATION
 # the most valuable thing of this sample, the rest are pretty much normal cmake
 add_library(lib_gperf SHARED IMPORTED)
 set_target_properties(lib_gperf PROPERTIES IMPORTED_LOCATION
-        ${distribution_DIR}/gperf/lib/${ANDROID_ABI}/libgperf.so)
+        ${distribution_DIR}/gperf/lib/${CMAKE_ANDROID_ARCH_ABI}/libgperf.so)
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
 add_library( # Sets the name of the library.
              native-lib
@@ -34,6 +36,11 @@ add_library( # Sets the name of the library.
 
              # Provides a relative path to your source file(s).
              native-lib.cpp )
+
+
+target_include_directories(native-lib PRIVATE
+        ${distribution_DIR}/gmath/include
+        ${distribution_DIR}/gperf/include)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
@@ -54,7 +61,8 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
                        native-lib
-
+                       lib_gmath
+                       lib_gperf
                        # Links the target library to the log library
                        # included in the NDK.
                        ${log-lib} )
